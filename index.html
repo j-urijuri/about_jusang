@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JUSANG</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<style>
+
+:root{
+  --ink:#584d46;
+  --muted:#9a8b80;
+  --frame:#efe1d4;
+  --frame-deep:#e7d3c2;
+  --surface:rgba(255,248,241,.48);
+  --surface-strong:rgba(255,249,243,.68);
+  --line:rgba(136,107,88,.18);
+  --line-strong:rgba(136,107,88,.27);
+  --peach:#e6a69b;
+  --peach-deep:#c97b71;
+  --butter:#ead39a;
+  --blue:#bfcfd5;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0}
+body{
+  font-family:ui-rounded,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  color:var(--ink);
+  background:url("assets/background.jpg") center/cover fixed no-repeat;
+  display:grid;
+  place-items:center;
+  padding:24px 16px;
+}
+button,a,input{font:inherit}
+.phone{
+  width:390px;
+  height:min(660px,calc(100vh - 48px));
+  background:rgba(239,225,212,.96);
+  border:1px solid rgba(112,86,70,.18);
+  border-radius:26px;
+  box-shadow:0 17px 42px rgba(108,74,53,.16);
+  overflow:hidden;
+  position:relative;
+  backdrop-filter:blur(7px);
+}
+.app{
+  height:100%;
+  display:grid;
+  grid-template-columns:56px 1fr;
+  grid-template-rows:54px minmax(0,1fr) 60px;
+  transition:grid-template-columns .24s ease;
+  background:linear-gradient(180deg,rgba(247,237,228,.52),rgba(242,228,215,.46));
+}
+.app.nav-closed{grid-template-columns:0 1fr}
+.topbar{
+  grid-column:1/-1;
+  grid-row:1;
+  display:grid;
+  grid-template-columns:56px 1fr 56px;
+  align-items:center;
+  background:rgba(239,225,212,.96);
+  border-bottom:1px solid var(--line);
+  z-index:5;
+}
+.menu-btn{
+  appearance:none;border:0;background:transparent;cursor:pointer;
+  width:56px;height:54px;display:grid;place-items:center;color:#6d5d53;
+}
+.menu-btn:hover{color:var(--peach-deep)}
+.brand{font-size:16px;font-weight:900;letter-spacing:.18em;text-align:center;color:#5d5047}
+.sidebar{
+  grid-column:1;grid-row:2;
+  background:rgba(239,225,212,.88);
+  border-right:1px solid var(--line);
+  overflow:hidden;
+  transition:transform .24s ease,opacity .16s ease;
+  padding-top:8px;
+}
+.app.nav-closed .sidebar{opacity:0;pointer-events:none;transform:translateX(-100%)}
+.nav{display:flex;flex-direction:column;align-items:center;gap:7px}
+.nav-btn{
+  width:40px;height:40px;border:0;border-radius:50%;background:transparent;
+  color:#8c7b70;display:grid;place-items:center;cursor:pointer;position:relative;
+  transition:background .15s ease,color .15s ease,transform .15s ease;
+}
+.nav-btn:hover{background:rgba(255,249,243,.35);color:#66564d}
+.nav-btn.active{
+  width:44px;height:44px;
+  color:var(--peach-deep);
+  background:rgba(255,246,238,.38);
+  transform:scale(1.03);
+}
+.nav-btn.active::after{
+  content:"";position:absolute;left:-7px;width:3px;height:18px;border-radius:9px;background:var(--peach);
+}
+svg{display:block}
+.content{
+  grid-column:2;grid-row:2;
+  min-width:0;overflow:auto;padding:13px 13px 18px;
+  scrollbar-width:thin;scrollbar-color:#d7bfae transparent;
+}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:#d7bfae;border-radius:20px}
+.page{display:none}.page.active{display:block}
+
+.links{
+  display:flex;gap:6px;margin:0 0 9px;padding:0;background:transparent;border:0;
+}
+.link-btn{
+  flex:1 1 0;min-width:0;height:36px;border:1px solid var(--line);border-radius:10px;
+  background:rgba(255,247,239,.34);color:#6c5a50;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;letter-spacing:.035em;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease;
+}
+.link-btn:hover{background:rgba(255,247,239,.64);border-color:var(--line-strong);transform:translateY(-1px)}
+.link-btn span{white-space:nowrap}
+.card,.post,.playlist-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:none;
+}
+.card{padding:14px 15px 15px}
+.section-title{display:flex;align-items:center;gap:8px;margin:0 0 11px;font-size:11px;letter-spacing:.14em;font-weight:900}
+.section-title::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--peach)}
+.about p{margin:4px 0;font-size:12.5px;line-height:1.7}.about strong{font-weight:900}
+.subsection{padding-top:13px;margin-top:13px;border-top:1px dashed rgba(140,108,88,.2)}
+.subsection-title{margin:0 0 8px;font-size:9px;letter-spacing:.15em;font-weight:900;color:#8f7c70}
+.subsection-title::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:7px;vertical-align:1px;background:var(--butter)}
+.subsection.dislike .subsection-title::before{background:var(--blue)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.tag{padding:5px 8px;border-radius:9px;background:rgba(255,247,239,.34);border:1px solid rgba(140,108,88,.13);font-size:10.5px;line-height:1.2}
+.tag.strong{font-weight:900}
+.dislike-list{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.dislike-list li{font-size:11.5px;line-height:1.55;padding-left:10px;position:relative}
+.dislike-list li::before{content:"·";position:absolute;left:0;color:#a58e80;font-weight:900}.dislike-list strong{font-weight:900}
+
+.feed{display:flex;flex-direction:column;gap:9px}
+.post{overflow:hidden}
+.post-head{display:flex;align-items:center;justify-content:space-between;padding:11px 13px 7px}
+.post-user{display:flex;align-items:center;gap:8px;min-width:0}
+.post-avatar{width:31px;height:31px;border-radius:50%;background:#f4e7da;border:1px solid var(--line);object-fit:cover}
+.post-meta{min-width:0}.post-name{font-size:11.5px;font-weight:900;line-height:1.15}.post-date{font-size:9px;color:var(--muted);margin-top:3px}
+.pinned{font-size:8px;font-weight:900;letter-spacing:.12em;color:#8f7467;background:rgba(255,247,239,.28);border:1px solid var(--line);border-radius:999px;padding:4px 6px}
+.post-body{padding:3px 13px 12px}.post-copy{font-size:11.5px;line-height:1.68;white-space:pre-line;margin:0}
+.post-links{display:grid;gap:6px;margin-top:10px}
+.post-link{display:block;text-decoration:none;color:var(--ink);background:rgba(255,247,239,.28);border:1px solid var(--line);border-radius:9px;padding:8px 9px}
+.post-link:hover{background:rgba(255,247,239,.55)}.post-link strong{display:block;font-size:10.5px;margin-bottom:2px}.post-link span{font-size:8.5px;color:var(--muted);overflow-wrap:anywhere}
+.post-images{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(143,110,89,.13);border-top:1px solid var(--line)}
+.post-images img{display:block;width:100%;height:202px;object-fit:cover;background:#f9f1e8}.post-images img:first-child{object-position:center top}
+.post-images.single{display:block;background:transparent}.post-images.single img{width:100%;height:auto;object-fit:contain}
+
+.banner-panel{background:transparent;border:0;padding:4px 4px 14px;box-shadow:none}
+.banner-list{display:flex;flex-direction:column;align-items:center;gap:11px}
+.search-logo{display:block;width:126px;max-width:56%;height:auto;margin:1px auto 8px}
+.banner-item{width:200px;max-width:100%;text-align:center}
+.banner-link{display:block;width:200px;max-width:100%;line-height:0;border-radius:4px;overflow:hidden;border:1px solid rgba(136,107,88,.14);box-shadow:none;transition:transform .15s ease,opacity .15s ease}
+.banner-link:hover{transform:translateY(-1px);opacity:.95}.banner-link img{display:block;width:100%;height:auto}
+.banner-url{display:none!important}
+.empty-page{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 15px;text-align:center;color:var(--muted);font-size:11px}
+
+.playlist-card{padding:13px 11px 11px}
+.playlist-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 9px}
+.playlist-head h2{font-size:11px;letter-spacing:.14em;margin:0;font-weight:900}.playlist-head span{font-size:8px;letter-spacing:.11em;color:var(--muted);font-weight:800}
+.playlist{display:flex;flex-direction:column;gap:4px}
+.track-row{
+  width:100%;display:grid;grid-template-columns:25px minmax(0,1fr) 34px;align-items:center;gap:5px;
+  min-height:40px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--ink);
+  padding:5px 7px;text-align:left;cursor:pointer;transition:background .15s ease,border-color .15s ease;
+}
+.track-row:hover{background:rgba(255,247,239,.28)}
+.track-row.active{background:rgba(244,204,193,.22);border-color:rgba(201,123,113,.16)}
+.track-no{font-size:8px;color:#a99689;font-weight:800}.track-name{font-size:10px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-duration{font-size:8px;color:var(--muted);text-align:right}
+.track-row.active .track-no,.track-row.active .track-name{color:#9d625b}
+
+/* integrated bottom player */
+.mini-player{
+  grid-column:1/-1;grid-row:3;z-index:6;
+  background:rgba(239,225,212,.98);border-top:1px solid var(--line);
+  padding:6px 11px 5px;box-shadow:none;
+}
+.player-top{display:flex;align-items:center;gap:8px;min-width:0}
+.player-info{min-width:0;flex:1;padding-left:2px}.player-label{display:none}.player-title{display:block;font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#66564c}
+.player-controls{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.player-btn{
+  width:27px;height:27px;border:0;border-radius:50%;background:transparent;color:#806d62;
+  display:grid;place-items:center;cursor:pointer;padding:0;transition:background .15s ease,color .15s ease,transform .15s ease;
+}
+.player-btn:hover{background:rgba(255,247,239,.42);color:#5f5048}.player-btn.play{width:32px;height:32px;background:#e7b1a7;color:#fff;border:0;box-shadow:0 2px 8px rgba(183,118,106,.16)}
+.player-btn.play:hover{background:#dd9e92}.player-btn svg{display:block}.player-btn.play .icon-pause{display:none}.player-btn.play .icon-play{display:block}.player-btn.play.is-playing .icon-play{display:none}.player-btn.play.is-playing .icon-pause{display:block}
+.player-progress{display:grid;grid-template-columns:27px 1fr 27px;align-items:center;gap:6px;margin-top:2px}.player-time{font-size:7px;color:#a08f84;font-variant-numeric:tabular-nums}.player-time:last-child{text-align:right}
+.progress-range{width:100%;height:10px;margin:0;appearance:none;background:transparent;cursor:pointer}.progress-range::-webkit-slider-runnable-track{height:2px;background:#d7c2b1;border-radius:99px}.progress-range::-webkit-slider-thumb{appearance:none;width:7px;height:7px;border-radius:50%;background:var(--peach-deep);margin-top:-2.5px;border:0}.progress-range::-moz-range-track{height:2px;background:#d7c2b1}.progress-range::-moz-range-progress{height:2px;background:var(--peach)}.progress-range::-moz-range-thumb{width:7px;height:7px;border:0;border-radius:50%;background:var(--peach-deep)}
+.player-audio{display:none}
+
+
+/* page-wide sticker layer — visible on every page, can be placed outside the phone */
+body{position:relative;overflow-x:hidden}
+.phone{z-index:10}
+.global-sticker-tools{
+  position:fixed;right:18px;top:18px;z-index:60;
+  display:flex;align-items:center;gap:6px;
+}
+.sticker-add{
+  height:31px;padding:0 11px;border:1px solid rgba(136,107,88,.22);border-radius:999px;
+  background:rgba(239,225,212,.88);backdrop-filter:blur(8px);color:#765f53;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font-size:8.5px;font-weight:900;letter-spacing:.08em;
+  box-shadow:0 5px 16px rgba(104,73,54,.08);
+  transition:background .15s ease,transform .15s ease,border-color .15s ease;
+}
+.sticker-add:hover{background:rgba(247,238,229,.96);border-color:rgba(136,107,88,.32);transform:translateY(-1px)}
+.sticker-add svg{width:13px;height:13px}
+.custom-sticker-input{display:none}
+.page-sticker-stage{
+  position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden;display:block;
+}
+.placed-sticker{
+  position:absolute;display:grid;place-items:center;transform:translate(-50%,-50%);
+  pointer-events:auto;touch-action:none;user-select:none;cursor:grab;
+  filter:drop-shadow(0 2px 3px rgba(118,83,62,.10));
+}
+.placed-sticker:active{cursor:grabbing}
+.placed-sticker>img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.placed-sticker.selected{outline:1px dashed rgba(201,123,113,.58);outline-offset:4px;border-radius:10px}
+.sticker-delete{
+  position:absolute;right:-10px;top:-10px;width:19px;height:19px;border:0;border-radius:50%;
+  background:#d99187;color:#fff;display:none;place-items:center;padding:0;cursor:pointer;
+  font-size:13px;line-height:1;box-shadow:0 2px 6px rgba(116,76,59,.18)
+}
+.placed-sticker.selected .sticker-delete{display:grid}
+@media(max-width:520px){
+  body{padding:10px;background-position:center center}
+  .phone{width:min(390px,calc(100vw - 20px));height:min(660px,calc(100vh - 20px));border-radius:22px}
+}
+
+</style>
+</head>
+<body>
+<div class="global-sticker-tools" id="globalStickerTools">
+  <button class="sticker-add" id="customStickerBtn" type="button" aria-label="스티커 이미지 추가">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    STICKER
+  </button>
+  <input class="custom-sticker-input" id="customStickerInput" type="file" accept="image/*" />
+</div>
+<div class="page-sticker-stage" id="stickerStage" aria-label="sticker board"></div>
+<div class="phone">
+  <div class="app" id="app">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg>
+      </button>
+      <div class="brand" aria-hidden="true"></div>
+      <div></div>
+    </header>
+
+    <aside class="sidebar">
+      <nav class="nav" aria-label="main navigation">
+        <button class="nav-btn" data-page="home" aria-label="home">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 10.5 12 3l8.5 7.5v9.5h-6v-6h-5v6h-6z"/></svg>
+        </button>
+        <button class="nav-btn active" data-page="about" aria-label="about">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15.4 8.6-2.1 4.7-4.7 2.1 2.1-4.7z"/></svg>
+        </button>
+        <button class="nav-btn" data-page="search" aria-label="search">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.2"/><path d="m15.5 15.5 4.2 4.2"/></svg>
+        </button>
+        <button class="nav-btn" data-page="plus" aria-label="plus">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="content" id="content">
+      <section class="page home-page" data-page-view="home">
+        <div class="feed">
+          <article class="post">
+            <div class="post-head">
+              <div class="post-user">
+                <img class="post-avatar" src="assets/avatar.gif" alt="주상 인장" />
+                <div class="post-meta">
+                  <div class="post-name">주상</div>
+                  <div class="post-date">𝟮𝟬𝟮𝟰. 𝟭𝟮. 𝟮𝟰.</div>
+                </div>
+              </div>
+              <div class="pinned">PINNED</div>
+            </div>
+            <div class="post-body">
+              <p class="post-copy">아니허리케인상태라 썸넬올리는걸 잊었어요.... .. ..
+.. . 
+여러분 그러니까..
+미츠루가...
+앤캐이고...
+뇰명이 사귀고....
+도링님을 이제 앤오님.이라고 부릅니다...</p>
+              <div class="post-links">
+                <a class="post-link" href="https://jusangkungya.wixsite.com/sunset" target="_blank" rel="noopener">
+                  <strong>🌠 노을에게 여명이</strong>
+                  <span>jusangkungya.wixsite.com/sunset</span>
+                </a>
+                <a class="post-link" href="https://erscommu0418.wixsite.com/deardawn" target="_blank" rel="noopener">
+                  <strong>🌅 노을이 여명에게</strong>
+                  <span>erscommu0418.wixsite.com/deardawn</span>
+                </a>
+              </div>
+            </div>
+            <div class="post-images">
+              <img src="assets/post-01-a.jpg" alt="노을여명 이미지 1" />
+              <img src="assets/post-01-b.jpg" alt="노을여명 이미지 2" />
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="post-head">
+              <div class="post-user">
+                <img class="post-avatar avatar-copy" alt="주상 인장" />
+                <div class="post-meta">
+                  <div class="post-name">주상</div>
+                </div>
+              </div>
+            </div>
+            <div class="post-body">
+              <p class="post-copy">💛🩷💙❤️
+훔치기!!!!!
+뇰명이랑 연결이 만났어요!!!!! 
+도장잘찍는능력이너무탐이납니다.
+다들 뭐 먹는데 미츠루만 일을하다니...</p>
+            </div>
+            <div class="post-images single">
+              <img src="assets/post-02.jpg" alt="뇰명이와 연결이 이미지" />
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page active" data-page-view="about">
+      <div class="links">
+        <a class="link-btn" target="_blank" rel="noopener" href="https://x.com/Jusang0mk93"><span>TWITTER</span></a>
+        <a class="link-btn" target="_blank" rel="noopener" href="https://x.com/Jusang0mk93/status/1897355202208129417"><span>STORAGE</span></a>
+        <a class="link-btn" target="_blank" rel="noopener" href="https://webhub-pied.vercel.app/web-hub?config=eyJ0b2tlbiI6Im50bl82MjI4MTI1MzkyODRaTUxoM0Y1b3N0T0JlV1NlVHdrcUdTcTB1QTVGUlU1NUY2IiwiYWRtaW5QYXNzd29yZCI6IjI1MTEyNzAxMjAiLCJ0aGVtZSI6ImN1c3RvbSIsImN1c3RvbUNvbG9yIjoiIzZiYzZmZiIsImN1c3RvbVBhbGV0dGVDb2xvcnMiOnsibGlnaHQiOnsiYmciOiIjODFkNGZlIiwidGV4dEFjY2VudCI6IiM4MDZmNzMifX0sInRpbWVzdGFtcCI6MTc3MDQ3Njg4NTY5MH0"><span>HARUSAKI</span></a>
+      </div>
+
+      <section class="card about">
+        <h2 class="section-title">ABOUT</h2>
+        <p><strong>용건 직멘</strong></p>
+        <p>주상, 드르렁 편한 쪽으로 불러주세요!</p>
+
+        <div class="subsection like">
+          <h3 class="subsection-title">LIKE</h3>
+          <div class="tags">
+            <span class="tag strong">노을여명</span><span class="tag strong">하루사키</span><span class="tag strong">왕자공주</span><span class="tag strong">궤도</span>
+            <span class="tag strong">해리포터</span><span class="tag strong">성세천하</span><span class="tag strong">호리카시</span>
+            <span class="tag">우주</span><span class="tag">SF</span><span class="tag">사별</span><span class="tag">타임루프</span><span class="tag">투게더 워킹</span>
+          </div>
+        </div>
+
+        <div class="subsection dislike">
+          <h3 class="subsection-title">DISLIKE</h3>
+          <ul class="dislike-list">
+            <li><strong>지인플</strong></li>
+            <li><strong>관캐견제</strong></li>
+            <li><strong>욕설, 반말, 갑작스러운 수위 및 비윤리적 발언</strong></li>
+            <li><strong>깁준다, 박는다, 꼴린다, 따먹는다 등의 말</strong></li>
+            <li><strong>자극적 사진 및 영상 알티</strong></li>
+            <li>잦은 멘션 스루</li>
+            <li><strong>자관, 당연히 언급하고 교류하는만큼 챙깁니다.</strong></li>
+          </ul>
+        </div>
+      </section>
+      </section>
+
+      <section class="page" data-page-view="search">
+        <div class="banner-panel">
+          <img class="search-logo" src="assets/meet-you.png" alt="Meet You" />
+          <div class="banner-list">
+            <div class="banner-item">
+              <a class="banner-link" href="http://eenqjrch.dothome.co.kr/" target="_blank" rel="noopener noreferrer" aria-label="banner 1">
+                <img src="assets/banner-01.png" alt="banner 1" />
+              </a>
+              <a class="banner-url" href="http://eenqjrch.dothome.co.kr/" target="_blank" rel="noopener noreferrer">http://eenqjrch.dothome.co.kr/</a>
+            </div>
+            <div class="banner-item">
+              <a class="banner-link" href="https://summergom.ivyro.net/avo/" target="_blank" rel="noopener noreferrer" aria-label="banner 2">
+                <img src="assets/banner-02.png" alt="banner 2" />
+              </a>
+              <a class="banner-url" href="https://summergom.ivyro.net/avo/" target="_blank" rel="noopener noreferrer">https://summergom.ivyro.net/avo/</a>
+            </div>
+            <div class="banner-item">
+              <a class="banner-link" href="http://borms2.dothome.co.kr/" target="_blank" rel="noopener noreferrer" aria-label="banner 3">
+                <img src="assets/banner-03.png" alt="banner 3" />
+              </a>
+              <a class="banner-url" href="http://borms2.dothome.co.kr/" target="_blank" rel="noopener noreferrer">http://borms2.dothome.co.kr/</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="page" data-page-view="plus">
+        <section class="playlist-card">
+          <div class="playlist-head">
+            <h2>PLAYLIST</h2>
+            <span>6 TRACKS</span>
+          </div>
+          <div class="playlist" id="playlist">
+            <button class="track-row active" type="button" data-index="0">
+              <span class="track-no">01</span><span class="track-name">愛する黎明へ</span><span class="track-duration">2:41</span>
+            </button>
+            <button class="track-row" type="button" data-index="1">
+              <span class="track-no">02</span><span class="track-name">드렁 커미션</span><span class="track-duration">4:40</span>
+            </button>
+            <button class="track-row" type="button" data-index="2">
+              <span class="track-no">03</span><span class="track-name">Piano</span><span class="track-duration">2:13</span>
+            </button>
+            <button class="track-row" type="button" data-index="3">
+              <span class="track-no">04</span><span class="track-name">Music Box</span><span class="track-duration">2:11</span>
+            </button>
+            <button class="track-row" type="button" data-index="4">
+              <span class="track-no">05</span><span class="track-name">잘 지내고 계신가요? 저는 잘 지내요.</span><span class="track-duration">3:27</span>
+            </button>
+            <button class="track-row" type="button" data-index="5">
+              <span class="track-no">06</span><span class="track-name">러브레터 커미션</span><span class="track-duration">3:27</span>
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="mini-player" aria-label="BGM player">
+      <div class="player-top">
+        <div class="player-info">
+          <span class="player-label">NOW PLAYING</span>
+          <span class="player-title" id="playerTitle">愛する黎明へ</span>
+        </div>
+        <div class="player-controls">
+          <button class="player-btn" id="prevTrack" type="button" aria-label="previous track">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5v14M18 6l-8 6 8 6z"/></svg>
+          </button>
+          <button class="player-btn play" id="playPause" type="button" aria-label="play">
+            <svg class="icon-play" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="icon-pause" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+          </button>
+          <button class="player-btn" id="nextTrack" type="button" aria-label="next track">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5v14M6 6l8 6-8 6z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="player-progress">
+        <span class="player-time" id="currentTime">0:00</span>
+        <input class="progress-range" id="progressRange" type="range" min="0" max="100" value="0" step="0.1" aria-label="track progress" />
+        <span class="player-time" id="totalTime">2:41</span>
+      </div>
+      <audio class="player-audio" id="bgmAudio" preload="auto" playsinline></audio>
+    </footer>
+  </div>
+</div>
+<script>
+const avatarSource = document.querySelector('.post-avatar:not(.avatar-copy)');
+if (avatarSource) document.querySelectorAll('.avatar-copy').forEach(img => img.src = avatarSource.src);
+
+const app = document.getElementById('app');
+const menuBtn = document.getElementById('menuBtn');
+const content = document.getElementById('content');
+
+menuBtn.addEventListener('click',()=>app.classList.toggle('nav-closed'));
+
+// 원본처럼 폰 안쪽 내용을 스크롤하면 왼쪽 메뉴가 옆으로 들어간다.
+content.addEventListener('scroll',()=>{
+  if(!app.classList.contains('nav-closed')) app.classList.add('nav-closed');
+},{passive:true});
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const page = btn.dataset.page;
+    document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('[data-page-view]').forEach(view=>{
+      view.classList.toggle('active', view.dataset.pageView === page);
+    });
+    content.scrollTo({top:0,behavior:'auto'});
+  });
+});
+
+
+// ── PAGE-WIDE STICKERS ─────────────────────────────────────────────
+// 스티커는 모든 메뉴에서 보이며, 폰 안/밖 구분 없이 브라우저 화면 전체에 붙일 수 있다.
+// 위치와 이미지 데이터는 localStorage에 저장되어 같은 브라우저에서는 새로고침 후에도 유지된다.
+const STICKER_STORAGE_KEY = 'jusang-page-stickers-v2';
+const stickerStage = document.getElementById('stickerStage');
+const customStickerBtn = document.getElementById('customStickerBtn');
+const customStickerInput = document.getElementById('customStickerInput');
+
+let stickers = [];
+let selectedStickerId = null;
+let dragState = null;
+
+function uid(){
+  return 's_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+}
+function readStickers(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(STICKER_STORAGE_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  }catch(_){ return []; }
+}
+function saveStickers(){
+  try{
+    localStorage.setItem(STICKER_STORAGE_KEY, JSON.stringify(stickers));
+  }catch(err){
+    alert('스티커 저장 공간이 가득 찼어요. 스티커를 조금 지워주세요!');
+  }
+}
+function addSticker(src, naturalWidth=1, naturalHeight=1){
+  const aspect = naturalWidth / Math.max(naturalHeight,1);
+  const base = 72;
+  let width = base, height = base;
+  if(aspect > 1){ height = base / aspect; }
+  else if(aspect < 1){ width = base * aspect; }
+  const entry = {
+    id: uid(), src,
+    x: .5, y: .5,
+    width: Math.max(34, width), height: Math.max(34, height)
+  };
+  stickers.push(entry);
+  selectedStickerId = entry.id;
+  saveStickers();
+  renderStickers();
+}
+function renderStickers(){
+  if(!stickerStage) return;
+  stickerStage.innerHTML = '';
+  const vw = Math.max(window.innerWidth,1);
+  const vh = Math.max(window.innerHeight,1);
+  stickers.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'placed-sticker' + (s.id === selectedStickerId ? ' selected' : '');
+    el.dataset.id = s.id;
+    el.style.width = `${s.width || 72}px`;
+    el.style.height = `${s.height || 72}px`;
+    el.style.left = `${Math.max(0,Math.min(1,s.x ?? .5))*vw}px`;
+    el.style.top = `${Math.max(0,Math.min(1,s.y ?? .5))*vh}px`;
+
+    const img = document.createElement('img');
+    img.src = s.src;
+    img.alt = '';
+    el.appendChild(img);
+
+    const del = document.createElement('button');
+    del.className = 'sticker-delete';
+    del.type = 'button';
+    del.setAttribute('aria-label','스티커 삭제');
+    del.textContent = '×';
+    del.addEventListener('pointerdown', ev => ev.stopPropagation());
+    del.addEventListener('click', ev => {
+      ev.stopPropagation();
+      stickers = stickers.filter(x => x.id !== s.id);
+      selectedStickerId = null;
+      saveStickers();
+      renderStickers();
+    });
+    el.appendChild(del);
+
+    el.addEventListener('pointerdown', startStickerDrag);
+    el.addEventListener('click', ev => {
+      ev.stopPropagation();
+      selectedStickerId = s.id;
+      renderSelectionOnly(s.id);
+    });
+    stickerStage.appendChild(el);
+  });
+}
+function renderSelectionOnly(id){
+  stickerStage?.querySelectorAll('.placed-sticker').forEach(el => {
+    el.classList.toggle('selected', el.dataset.id === id);
+  });
+}
+function startStickerDrag(ev){
+  if(ev.target.closest('.sticker-delete')) return;
+  const el = ev.currentTarget;
+  const s = stickers.find(x => x.id === el.dataset.id);
+  if(!s) return;
+  selectedStickerId = s.id;
+  const r = el.getBoundingClientRect();
+  dragState = {
+    id:s.id, el,
+    dx:ev.clientX-(r.left+r.width/2),
+    dy:ev.clientY-(r.top+r.height/2)
+  };
+  el.setPointerCapture?.(ev.pointerId);
+  ev.preventDefault();
+  renderSelectionOnly(s.id);
+}
+document.addEventListener('pointermove', ev => {
+  if(!dragState) return;
+  const s = stickers.find(x => x.id === dragState.id);
+  if(!s) return;
+  const vw = Math.max(window.innerWidth,1);
+  const vh = Math.max(window.innerHeight,1);
+  const halfW = (s.width || 72)/2;
+  const halfH = (s.height || 72)/2;
+  let x = ev.clientX - dragState.dx;
+  let y = ev.clientY - dragState.dy;
+  x = Math.max(halfW, Math.min(vw-halfW, x));
+  y = Math.max(halfH, Math.min(vh-halfH, y));
+  s.x = x / vw;
+  s.y = y / vh;
+  dragState.el.style.left = `${x}px`;
+  dragState.el.style.top = `${y}px`;
+});
+document.addEventListener('pointerup', () => {
+  if(!dragState) return;
+  dragState = null;
+  saveStickers();
+});
+document.addEventListener('click', ev => {
+  if(!ev.target.closest('.placed-sticker') && !ev.target.closest('.global-sticker-tools')){
+    selectedStickerId = null;
+    renderSelectionOnly(null);
+  }
+});
+document.addEventListener('keydown', ev => {
+  if((ev.key === 'Delete' || ev.key === 'Backspace') && selectedStickerId && !/INPUT|TEXTAREA/.test(document.activeElement?.tagName || '')){
+    stickers = stickers.filter(x => x.id !== selectedStickerId);
+    selectedStickerId = null;
+    saveStickers();
+    renderStickers();
+  }
+});
+customStickerBtn?.addEventListener('click', () => customStickerInput?.click());
+customStickerInput?.addEventListener('change', () => {
+  const file = customStickerInput.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // localStorage 용량을 아끼기 위해 큰 이미지는 투명 WebP로 축소한다.
+      // GIF는 애니메이션을 보존하기 위해 원본 data URL을 그대로 사용한다.
+      if(file.type === 'image/gif'){
+        addSticker(reader.result, img.naturalWidth, img.naturalHeight);
+        customStickerInput.value = '';
+        return;
+      }
+      const max = 300;
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.naturalWidth*scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight*scale));
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      addSticker(canvas.toDataURL('image/webp',.86), canvas.width, canvas.height);
+      customStickerInput.value = '';
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+stickers = readStickers();
+requestAnimationFrame(renderStickers);
+window.addEventListener('resize', () => requestAnimationFrame(renderStickers));
+
+
+const tracks = [
+  { title: "愛する黎明へ", src: "music/01_aishiteru_reimei.mp3" },
+  { title: "드렁 커미션", src: "music/02_dreong_commission.mp3" },
+  { title: "Piano", src: "music/03_piano.mp3" },
+  { title: "Music Box", src: "music/04_music_box.mp3" },
+  { title: "잘 지내고 계신가요? 저는 잘 지내요.", src: "music/05_jal_jinaeyo.m4a" },
+  { title: "러브레터 커미션", src: "music/06_loveletter_commission.m4a" }
+];
+
+const bgmAudio = document.getElementById('bgmAudio');
+const playPause = document.getElementById('playPause');
+const prevTrack = document.getElementById('prevTrack');
+const nextTrack = document.getElementById('nextTrack');
+const playerTitle = document.getElementById('playerTitle');
+const progressRange = document.getElementById('progressRange');
+const currentTimeEl = document.getElementById('currentTime');
+const totalTimeEl = document.getElementById('totalTime');
+const trackRows = [...document.querySelectorAll('.track-row')];
+let currentTrack = 0;
+
+const formatTime = (seconds) => {
+  if (!Number.isFinite(seconds)) return '0:00';
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60).toString().padStart(2,'0');
+  return `${min}:${sec}`;
+};
+
+const syncTrackUI = () => {
+  playerTitle.textContent = tracks[currentTrack].title;
+  trackRows.forEach((row, index) => row.classList.toggle('active', index === currentTrack));
+};
+
+const loadTrack = (index, autoplay = false) => {
+  currentTrack = (index + tracks.length) % tracks.length;
+  bgmAudio.src = tracks[currentTrack].src;
+  bgmAudio.load();
+  progressRange.value = 0;
+  currentTimeEl.textContent = '0:00';
+  const durationLabel = trackRows[currentTrack]?.querySelector('.track-duration')?.textContent || '0:00';
+  totalTimeEl.textContent = durationLabel;
+  syncTrackUI();
+  if (autoplay) {
+    bgmAudio.play().catch(() => setPlayingUI(false));
+  }
+};
+
+const setPlayingUI = (playing) => {
+  playPause.classList.toggle('is-playing', playing);
+  playPause.setAttribute('aria-label', playing ? 'pause' : 'play');
+};
+
+playPause.addEventListener('click', async () => {
+  if (!bgmAudio.paused) {
+    bgmAudio.pause();
+    return;
+  }
+  try {
+    if (!bgmAudio.src) loadTrack(currentTrack, false);
+    await bgmAudio.play();
+  } catch (err) {
+    // Retry once after explicitly reloading the embedded source.
+    bgmAudio.load();
+    try { await bgmAudio.play(); } catch (_) { setPlayingUI(false); }
+  }
+});
+
+prevTrack.addEventListener('click', () => {
+  const keepPlaying = !bgmAudio.paused;
+  loadTrack(currentTrack - 1, keepPlaying);
+});
+
+nextTrack.addEventListener('click', () => {
+  const keepPlaying = !bgmAudio.paused;
+  loadTrack(currentTrack + 1, keepPlaying);
+});
+
+trackRows.forEach(row => {
+  row.addEventListener('click', () => loadTrack(Number(row.dataset.index), true));
+});
+
+bgmAudio.addEventListener('play', () => setPlayingUI(true));
+bgmAudio.addEventListener('pause', () => setPlayingUI(false));
+bgmAudio.addEventListener('loadedmetadata', () => {
+  if (Number.isFinite(bgmAudio.duration)) totalTimeEl.textContent = formatTime(bgmAudio.duration);
+});
+bgmAudio.addEventListener('timeupdate', () => {
+  if (!Number.isFinite(bgmAudio.duration) || bgmAudio.duration <= 0) return;
+  currentTimeEl.textContent = formatTime(bgmAudio.currentTime);
+  progressRange.value = (bgmAudio.currentTime / bgmAudio.duration) * 100;
+});
+bgmAudio.addEventListener('ended', () => loadTrack(currentTrack + 1, true));
+
+progressRange.addEventListener('input', () => {
+  if (!Number.isFinite(bgmAudio.duration) || bgmAudio.duration <= 0) return;
+  bgmAudio.currentTime = (Number(progressRange.value) / 100) * bgmAudio.duration;
+});
+
+loadTrack(0, false);
+
+</script>
+</body>
+</html>
